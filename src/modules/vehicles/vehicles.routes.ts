@@ -15,9 +15,9 @@ const router = Router();
 router.post("/", authenticate, authorize(["ADMIN"]), createVehicle);
 
 router.get("/", getAllVehicles);
-router.get("/:id", getSingleVehicle);
+router.get("/:vehicleId", getSingleVehicle);
 
-router.put("/:id", authenticate, authorize(["ADMIN"]), updateVehicle);
-router.delete("/:id", authenticate, authorize(["ADMIN"]), deleteVehicle);
+router.put("/:vehicleId", authenticate, authorize(["ADMIN"]), updateVehicle);
+router.delete("/:vehicleId", authenticate, authorize(["ADMIN"]), deleteVehicle);
 
 export default router;

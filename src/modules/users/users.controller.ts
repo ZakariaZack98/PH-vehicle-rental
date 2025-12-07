@@ -2,7 +2,6 @@ import { Response, NextFunction } from "express";
 import { AuthRequest } from "../../middlewares/auth";
 import * as usersService from "./users.service";
 
-
 export async function getAllUsers(
   req: AuthRequest,
   res: Response,
@@ -20,14 +19,13 @@ export async function getAllUsers(
   }
 }
 
-
 export async function getSingleUser(
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ) {
   try {
-    const id = Number(req.params.id);
+    const id = Number(req.params.userId);
     const user = await usersService.getUserById(id, req.user!);
 
     return res.status(200).json({
@@ -40,14 +38,13 @@ export async function getSingleUser(
   }
 }
 
-
 export async function updateUser(
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ) {
   try {
-    const id = Number(req.params.id);
+    const id = Number(req.params.userId);
     const updated = await usersService.updateUser(id, req.body, req.user!);
 
     return res.status(200).json({
@@ -66,7 +63,7 @@ export async function deleteUser(
   next: NextFunction
 ) {
   try {
-    const id = Number(req.params.id);
+    const id = Number(req.params.userId);
     await usersService.deleteUser(id, req.user!);
 
     return res.status(200).json({

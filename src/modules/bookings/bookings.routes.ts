@@ -10,8 +10,9 @@ import {
 
 const router = Router();
 
-router.post("/", authenticate, authorize(["CUSTOMER"]), createBooking);
+router.post("/", authenticate, authorize(["CUSTOMER", "ADMIN"]), createBooking);
 router.get("/", authenticate, getBookings);
-router.put("/:id/return", authenticate, authorize(["ADMIN"]), returnVehicle);
+// Update booking status (e.g., cancel or mark returned) — parameter name follows API reference
+router.put("/:bookingId", authenticate, returnVehicle);
 
 export default router;

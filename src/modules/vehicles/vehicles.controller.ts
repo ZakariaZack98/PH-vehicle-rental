@@ -1,27 +1,48 @@
 import { Request, Response, NextFunction } from "express";
 import * as vehiclesService from "./vehicles.service";
 
+function formatVehicleForResponse(v: any) {
+  if (!v) return v;
+  return {
+    ...v,
+    type: v.type ? String(v.type).toLowerCase() : v.type,
+    availability_status: v.availability_status
+      ? String(v.availability_status).toLowerCase()
+      : v.availability_status,
+  };
+}
+
 export async function createVehicle(
   req: Request,
   res: Response,
   next: NextFunction
 ) {
   try {
-    // Accept client-friendly payloads and map to service/db shape.
-    // Client may send: { name, description, type, pricePerHour, registrationNumber }
-    const name = req.body.name ?? req.body.vehicle_name;
-    const registration_number =
-      req.body.registrationNumber ??
-      req.body.registration_number ??
-      `REG-${Date.now()}`;
-    const price = req.body.pricePerHour ?? req.body.daily_rent_price;
+    const {
+      vehicle_name,
+      type,
+      registration_number,
+      daily_rent_price,
+      availability_status,
+    } = req.body;
+
+    if (
+      !vehicle_name ||
+      !type ||
+      !registration_number ||
+      daily_rent_price === undefined
+    ) {
+      throw { status: 400, message: "Missing required vehicle fields" };
+    }
 
     const payload = {
-      vehicle_name: name,
-      type: req.body.type,
+      vehicle_name,
+      type: String(type).toUpperCase(),
       registration_number,
-      daily_rent_price: price,
-      availability_status: req.body.availability_status,
+      daily_rent_price: Number(daily_rent_price),
+      availability_status: availability_status
+        ? String(availability_status).toUpperCase()
+        : undefined,
     } as any;
 
     const vehicle = await vehiclesService.createVehicle(payload);
@@ -29,7 +50,7 @@ export async function createVehicle(
     return res.status(201).json({
       success: true,
       message: "Vehicle created successfully",
-      data: vehicle,
+      data: formatVehicleForResponse(vehicle),
     });
   } catch (err) {
     next(err);
@@ -47,7 +68,7 @@ export async function getAllVehicles(
     return res.status(200).json({
       success: true,
       message: "Vehicles fetched successfully",
-      data: vehicles,
+      data: vehicles.map(formatVehicleForResponse),
     });
   } catch (err) {
     next(err);
@@ -60,13 +81,13 @@ export async function getSingleVehicle(
   next: NextFunction
 ) {
   try {
-    const id = Number(req.params.id);
+    const id = Number(req.params.vehicleId);
     const vehicle = await vehiclesService.getVehicleById(id);
 
     return res.status(200).json({
       success: true,
       message: "Vehicle fetched successfully",
-      data: vehicle,
+      data: formatVehicleForResponse(vehicle),
     });
   } catch (err) {
     next(err);
@@ -79,13 +100,27 @@ export async function updateVehicle(
   next: NextFunction
 ) {
   try {
-    const id = Number(req.params.id);
-    const updated = await vehiclesService.updateVehicle(id, req.body);
+    const id = Number(req.params.vehicleId);
+    const payload: any = {};
+    if (req.body.vehicle_name !== undefined)
+      payload.vehicle_name = req.body.vehicle_name;
+    if (req.body.type !== undefined)
+      payload.type = String(req.body.type).toUpperCase();
+    if (req.body.registration_number !== undefined)
+      payload.registration_number = req.body.registration_number;
+    if (req.body.daily_rent_price !== undefined)
+      payload.daily_rent_price = Number(req.body.daily_rent_price);
+    if (req.body.availability_status !== undefined)
+      payload.availability_status = String(
+        req.body.availability_status
+      ).toUpperCase();
+
+    const updated = await vehiclesService.updateVehicle(id, payload);
 
     return res.status(200).json({
       success: true,
       message: "Vehicle updated successfully",
-      data: updated,
+      data: formatVehicleForResponse(updated),
     });
   } catch (err) {
     next(err);
@@ -106,7 +141,7 @@ export async function deleteVehicle(
   next: NextFunction
 ) {
   try {
-    const id = Number(req.params.id);
+    const id = Number(req.params.vehicleId);
     await vehiclesService.deleteVehicle(id);
 
     return res.status(200).json({

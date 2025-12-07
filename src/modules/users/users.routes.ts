@@ -11,9 +11,9 @@ import {
 
 const router = Router();
 
-router.get("/", authenticate, getAllUsers);
-router.get("/:id", authenticate, getSingleUser);
-router.put("/:id", authenticate, updateUser);
-router.delete("/:id", authenticate, authorize(["ADMIN"]), deleteUser);
+router.get("/", authenticate, authorize(["ADMIN"]), getAllUsers);
+router.get("/:userId", authenticate, getSingleUser);
+router.put("/:userId", authenticate, updateUser);
+router.delete("/:userId", authenticate, authorize(["ADMIN"]), deleteUser);
 
 export default router;

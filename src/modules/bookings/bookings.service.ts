@@ -80,10 +80,9 @@ export async function createBooking(
   return booking;
 }
 
-
 /**
  ** Retrieves all bookings if the current user is an admin, or retrieves all bookings for the current user if they are not an admin.
- * 
+ *
  * @param {Object} currentUser - current user object with userId and role
  * @returns {Promise<Object[]>} - promise resolving to an array of booking objects in the shape of the API reference
  */
@@ -103,10 +102,9 @@ export async function getBookings(currentUser: {
   });
 }
 
-
 /**
  ** Returns a vehicle by marking its booking as returned and updating its availability status to available.
- * 
+ *
  * @throws {Object} - error response with status 404 and message "Booking not found" if the booking with the given id does not exist
  * @param {number} id - booking id
  * @returns {Promise<Object>} - promise resolving to the updated booking object in the shape of the API reference
@@ -123,6 +121,57 @@ export async function returnVehicle(id: number) {
     data: {
       status: BookingStatus.RETURNED,
     },
+  });
+
+  await prisma.vehicle.update({
+    where: { id: booking.vehicleId },
+    data: { availability_status: AvailabilityStatus.AVAILABLE },
+  });
+
+  return updated;
+}
+
+
+/**
+ ** Cancels a booking by updating its status to cancelled and marking the vehicle as available.
+ * Only admins or the customer who made the booking can cancel it.
+ * Cannot cancel booking after start date.
+ *
+ * @param {number} id - booking id
+ * @param {Object} currentUser - current user object with userId and role
+ * @returns {Promise<Object>} - promise resolving to the updated booking object in the shape of the API reference
+ * @throws {Object} - error response with status 404 and message "Booking not found" if the booking with the given id does not exist
+ * @throws {Object} - error response with status 403 and message "You are not authorized to perform this action" if the current user is not an admin and the booking's customer id does not match the current user's id
+ * @throws {Object} - error response with status 400 and message "Cannot cancel booking after start date" if the current date is after the booking's start date
+ */
+export async function cancelBooking(
+  id: number,
+  currentUser: { userId: number; role: string }
+) {
+  const booking = await prisma.booking.findUnique({ where: { id } });
+
+  if (!booking) {
+    throw { status: 404, message: "Booking not found" };
+  }
+
+  if (
+    currentUser.role !== "ADMIN" &&
+    booking.customerId !== currentUser.userId
+  ) {
+    throw {
+      status: 403,
+      message: "You are not authorized to perform this action",
+    };
+  }
+
+  const now = new Date();
+  if (now >= booking.rent_start_date) {
+    throw { status: 400, message: "Cannot cancel booking after start date" };
+  }
+
+  const updated = await prisma.booking.update({
+    where: { id },
+    data: { status: BookingStatus.CANCELLED },
   });
 
   await prisma.vehicle.update({
