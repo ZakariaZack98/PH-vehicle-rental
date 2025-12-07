@@ -11,8 +11,12 @@ export interface AuthPayload {
 }
 
 export interface AuthRequest extends Request {
-  user?: AuthPayload;
+  user?: {
+    userId: number;
+    role: "ADMIN" | "CUSTOMER";
+  };
 }
+
 
 /**
  ** Middleware to authenticate incoming requests.
@@ -25,7 +29,9 @@ export interface AuthRequest extends Request {
  * @param {Response} res The response object.
  * @param {NextFunction} next The next middleware to call.
  */
-export function authenticate(req: AuthRequest, res: Response, next: NextFunction) {
+export function authenticate(req: AuthRequest,
+  res: Response,
+  next: NextFunction) {
   try {
     //TODO: see if bearer token came with request, thriow error if not
     const header = req.headers.authorization;
