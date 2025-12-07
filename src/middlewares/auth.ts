@@ -15,7 +15,7 @@ export interface AuthRequest extends Request {
 }
 
 /**
- * Middleware to authenticate incoming requests.
+ ** Middleware to authenticate incoming requests.
  * 
  * It expects a valid JWT token in the Authorization header.
  * If the token is missing or invalid, it returns a 401 response.
@@ -27,6 +27,7 @@ export interface AuthRequest extends Request {
  */
 export function authenticate(req: AuthRequest, res: Response, next: NextFunction) {
   try {
+    //TODO: see if bearer token came with request, thriow error if not
     const header = req.headers.authorization;
     if (!header || !header.startsWith("Bearer ")) {
       return res.status(401).json({
@@ -35,6 +36,7 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
       });
     }
 
+    //TODO: Extract the token abd set the payload
     const token = header.split(" ")[1];
     const payload = jwt.verify(token, JWT_SECRET) as AuthPayload;
     req.user = {
@@ -42,6 +44,7 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
       role: payload.role,
     };
     next();
+
   } catch (err) {
     return res.status(401).json({
       success: false,

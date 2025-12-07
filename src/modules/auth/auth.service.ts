@@ -9,7 +9,7 @@ const TOKEN_EXPIRES_IN = "24h";
 type RoleInput = "admin" | "customer";
 
 /**
- * Signup service.
+ ** Signup service.
  * 
  * Creates a new user with the given payload and returns the user in the shape
  * of the API reference.
@@ -67,7 +67,7 @@ export async function signupService(payload: {
 }
 
 /**
- * Signin service.
+ ** Signin service.
  * 
  * Authenticates a user with the given email and password and returns a valid JWT token
  * and the user information in the shape of the API reference.

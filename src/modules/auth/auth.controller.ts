@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import * as authService from "./auth.service";
 
 /**
- * Signup endpoint.
+ ** Signup endpoint.
  * 
  * Creates a new user with the given payload and returns the user in the shape
  * of the API reference.
@@ -30,7 +30,7 @@ export async function signup(req: Request, res: Response, next: NextFunction) {
 }
 
 /**
- * Signin endpoint.
+ ** Signin endpoint.
  * 
  * Authenticates a user with the given email and password and returns a valid JWT token
  * and the user information in the shape of the API reference.
